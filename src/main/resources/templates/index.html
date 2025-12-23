@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统监控面板</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+    <script src="/webjars/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/webjars/bootstrap/5.3.2/js/bootstrap.min.js"></script>
+    <script src="/webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/2.3.4/stomp.min.js"></script>
+    <script src="/webjars/npm/chart.js/3.9.1/dist/chart.min.js"></script>
+    <!-- 备用CDN加载Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
+    <!-- 添加库加载检查脚本 -->
+    <script>
+        // 检查必要的库是否已加载
+        window.addEventListener('load', function() {
+            console.log('页面完全加载');
+            
+            if (typeof jQuery === 'undefined') {
+                console.error('jQuery未加载');
+            } else {
+                console.log('jQuery版本:', jQuery.fn.jquery);
+            }
+            
+            if (typeof bootstrap === 'undefined') {
+                console.error('Bootstrap未加载');
+            } else {
+                console.log('Bootstrap已加载');
+            }
+            
+            if (typeof SockJS === 'undefined') {
+                console.error('SockJS未加载');
+            } else {
+                console.log('SockJS已加载');
+            }
+            
+            if (typeof Stomp === 'undefined') {
+                console.error('Stomp未加载');
+            } else {
+                console.log('Stomp已加载');
+            }
+            
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js未加载');
+                console.error('Chart对象类型:', typeof Chart);
+                console.error('window.Chart存在:', typeof window.Chart);
+                console.error('检查Chart.js脚本加载状态...');
+                
+                // 检查脚本标签
+                const scripts = document.getElementsByTagName('script');
+                for (let i = 0; i < scripts.length; i++) {
+                    const script = scripts[i];
+                    if (script.src && script.src.includes('chart')) {
+                        console.log('找到Chart.js脚本:', script.src);
+                        console.log('脚本加载状态:', script.readyState || '未知');
+                    }
+                }
+            } else {
+                console.log('Chart.js版本:', Chart.version);
+            }
+        });
+        
+        // 立即检查Chart.js加载状态
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                console.log('DOM加载完成，检查Chart.js状态...');
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js仍然未加载');
+                    console.error('尝试手动加载Chart.js...');
+                    
+                    // 尝试手动创建script标签加载Chart.js
+                    const script = document.createElement('script');
+                    script.src = '/webjars/npm/chart.js/3.9.1/dist/chart.min.js';
+                    script.onload = function() {
+                        console.log('手动加载Chart.js成功');
+                    };
+                    script.onerror = function() {
+                        console.error('手动加载Chart.js失败');
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    console.log('Chart.js已加载，版本:', Chart.version);
+                }
+            }, 100);
+        });
+    </script>
+</head>
+<body>
+    <div class="monitoring-dashboard">
+        <!-- 顶部控制台 -->
+        <header class="top-console">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-3">
+                        <h1 class="logo">系统监控</h1>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="control-buttons">
+                            <button id="toggleDataStream" class="btn btn-primary btn-sm">
+                                <i class="bi bi-pause-fill"></i> 暂停数据流
+                            </button>
+                            <button id="refreshData" class="btn btn-success btn-sm">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新数据
+                            </button>
+                            <button id="toggleTheme" class="btn btn-secondary btn-sm">
+                                <i class="bi bi-moon-fill"></i> 切换主题
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="search-filter">
+                            <input type="text" id="searchInput" class="form-control form-control-sm" 
+                                   placeholder="搜索服务器/标签/区域...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- 左侧边栏 -->
+            <aside class="left-sidebar">
+                <div class="sidebar-content">
+                    <div class="section-title">任务管理面板</div>
+                    
+                    <!-- 任务状态统计 -->
+                    <div class="task-summary">
+                        <div class="summary-item">
+                            <span class="label">排队中:</span>
+                            <span id="queuedCount" class="count">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">运行中:</span>
+                            <span id="runningCount" class="count">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">失败:</span>
+                            <span id="failedCount" class="count">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">完成:</span>
+                            <span id="completedCount" class="count">0</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 任务列表 -->
+                    <div class="task-list-container">
+                        <h5>监控任务列表</h5>
+                        <div id="taskList" class="task-list">
+                            <!-- 任务项将通过JavaScript动态添加 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 告警记录 -->
+                    <div class="alert-list-container">
+                        <h5>异常告警记录</h5>
+                        <div id="alertList" class="alert-list">
+                            <!-- 告警项将通过JavaScript动态添加 -->
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 右侧内容区 -->
+            <main class="right-content">
+                <!-- 右上系统状态区 -->
+                <section class="system-status">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-12">
+                                <h4>系统状态监控</h4>
+                            </div>
+                        </div>
+                        
+                        <!-- 健康状态指示器 -->
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <div class="status-indicator">
+                                    <div id="healthStatus" class="status-light healthy"></div>
+                                    <span>系统健康度</span>
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="load-balance-status">
+                                    <span id="loadBalanceText">负载均衡状态: 正常</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 核心指标 -->
+                        <div class="row metrics-row">
+                            <div class="col-md-3">
+                                <div class="metric-card">
+                                    <div class="metric-label">CPU使用率</div>
+                                    <div id="cpuUsage" class="metric-value">0%</div>
+                                    <div class="metric-bar">
+                                        <div id="cpuBar" class="metric-progress" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="metric-card">
+                                    <div class="metric-label">内存使用率</div>
+                                    <div id="memoryUsage" class="metric-value">0%</div>
+                                    <div class="metric-bar">
+                                        <div id="memoryBar" class="metric-progress" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="metric-card">
+                                    <div class="metric-label">磁盘使用率</div>
+                                    <div id="diskUsage" class="metric-value">0%</div>
+                                    <div class="metric-bar">
+                                        <div id="diskBar" class="metric-progress" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="metric-card">
+                                    <div class="metric-label">平均负载</div>
+                                    <div id="loadAverage" class="metric-value">0.0</div>
+                                    <div class="metric-bar">
+                                        <div id="loadBar" class="metric-progress" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 网络I/O -->
+                        <div class="row network-row">
+                            <div class="col-md-6">
+                                <div class="network-card">
+                                    <div class="network-label">网络入站</div>
+                                    <div id="networkIn" class="network-value">0 MB/s</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="network-card">
+                                    <div class="network-label">网络出站</div>
+                                    <div id="networkOut" class="network-value">0 MB/s</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 右侧主可视化区 -->
+                <section class="data-visualization">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="visualization-controls">
+                                    <div class="control-group">
+                                        <label for="dimensionSelect">维度切换:</label>
+                                        <select id="dimensionSelect" class="form-select form-select-sm">
+                                            <option value="server">按服务器</option>
+                                            <option value="region">按区域</option>
+                                            <option value="service">按服务类型</option>
+                                        </select>
+                                    </div>
+                                    <div class="control-group">
+                                        <label for="timeRange">时间范围:</label>
+                                        <select id="timeRange" class="form-select form-select-sm">
+                                            <option value="5">最近5分钟</option>
+                                            <option value="10">最近10分钟</option>
+                                            <option value="15">最近15分钟</option>
+                                        </select>
+                                    </div>
+                                    <div class="control-group">
+                                        <button id="playHistory" class="btn btn-outline-primary btn-sm" title="历史回放">
+                                            <i class="bi bi-play-fill"></i> 历史回放
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 图表区域 -->
+                        <div class="row charts-row">
+                            <div class="col-md-8">
+                                <div class="chart-container">
+                                    <h5>时序图表</h5>
+                                    <canvas id="timeSeriesChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="chart-container">
+                                    <h5>分布图表</h5>
+                                    <canvas id="distributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 详细数据表格 -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="data-table-container">
+                                    <h5>详细数据</h5>
+                                    <div class="table-responsive">
+                                        <table id="metricsTable" class="table table-dark table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>服务器名</th>
+                                                    <th>区域</th>
+                                                    <th>服务类型</th>
+                                                    <th>CPU</th>
+                                                    <th>内存</th>
+                                                    <th>磁盘</th>
+                                                    <th>网络入</th>
+                                                    <th>网络出</th>
+                                                    <th>负载</th>
+                                                    <th>时间</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="metricsTableBody">
+                                                <!-- 数据行将通过JavaScript动态添加 -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- 任务详情模态框 -->
+    <div class="modal fade" id="taskDetailModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">任务详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" title="关闭"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="taskDetailContent">
+                        <!-- 任务详情将通过JavaScript动态填充 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/monitoring.js"></script>
+</body>
+</html>
