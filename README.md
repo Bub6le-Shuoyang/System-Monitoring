@@ -376,24 +376,6 @@ logging.level.org.springframework.web.socket=DEBUG
 3. 配置数据采集间隔
 4. 实现告警通知机制
 
-## 许可证
-
-本项目采用MIT许可证，允许自由使用、修改和分发。
-
-## 贡献指南
-
-1. Fork本项目
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -am 'Add some AmazingFeature'`)
-4. 推送分支 (`git push origin feature/AmazingFeature`)
-5. 创建Pull Request
-
-## 联系信息
-
-- 项目维护者: [Your Name]
-- 邮箱: [your.email@example.com]
-- 项目地址: [https://github.com/yourusername/SystemMonitoring]
 
 ---
 
-**注意**: 本项目仅用于学习和演示目的，生产环境使用请进行充分测试和安全评估。

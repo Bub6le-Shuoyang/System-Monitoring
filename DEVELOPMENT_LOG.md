@@ -4,18 +4,22 @@
 基于Vue前端框架和Spring Boot后端框架实现深色主题系统监控Web面板的开发过程记录。
 
 ## 开发时间线
-- **开始时间**: 2025-12-23
+- **开始时间**: 2025-12-22
 - **项目**: SystemMonitoring
 - **目标**: 实现具备基础监控展示、交互与可视化能力的深色主题系统监控Web面板
 
+## 大模型API接入信息截图
+![img_1.png](img_1.png)
+![img.png](img.png)
+
 ## 阶段一：需求分析与架构设计
 
-### 2025-12-23 05:00 - 需求理解
+### 2025-12-22 05:00 - 需求理解
 - 分析用户提供的详细需求文档
 - 识别关键功能点：总体布局、视觉主题、功能模块、工程要求
 - 确定技术栈：Spring Boot + Vue + Chart.js + WebSocket
 
-### 2025-12-23 05:30 - 架构设计
+### 2025-12-22 05:30 - 架构设计
 - 设计前后端分离架构
 - 规划API接口设计
 - 设计数据库模型
@@ -23,12 +27,12 @@
 
 ## 阶段二：项目初始化与基础框架
 
-### 2025-12-23 06:00 - 项目结构创建
+### 2025-12-22 18:11 - 项目结构创建
 - 创建标准Maven项目结构
 - 配置Spring Boot启动类
 - 设置基础依赖配置
 
-### 2025-12-23 06:30 - 依赖配置
+### 2025-12-22 18:12 - 依赖配置
 ```xml
 <dependencies>
     <!-- Spring Boot Starters -->
@@ -91,13 +95,13 @@
 
 ## 阶段三：数据模型与Repository层
 
-### 2025-12-23 07:00 - 数据模型设计
+### 2025-12-22 18:20 - 数据模型设计
 - 创建SystemMetrics实体类
 - 创建Task实体类
 - 创建Alert实体类
 - 设计JPA注解和关系映射
 
-### 2025-12-23 07:30 - Repository层实现
+### 2025-12-22 18:20 - Repository层实现
 - 创建SystemMetricsRepository接口
 - 创建TaskRepository接口
 - 创建AlertRepository接口
@@ -105,32 +109,32 @@
 
 ## 阶段四：业务逻辑层
 
-### 2025-12-23 08:00 - Service层设计
+### 2025-12-22 18:20 - Service层设计
 - 创建SystemMetricsService类
 - 创建TaskService类
 - 创建AlertService类
 - 实现业务逻辑和数据处理
 
-### 2025-12-23 08:30 - 数据初始化服务
+### 2025-12-22 18:20 - 数据初始化服务
 - 创建DataInitializationService类
 - 实现@PostConstruct初始化方法
 - 生成模拟数据用于演示
 
 ## 阶段五：控制器层
 
-### 2025-12-23 09:00 - Controller实现
+### 2025-12-22 18:21 - Controller实现
 - 创建MainController类处理页面路由
 - 创建ApiController类提供RESTful API
 - 创建WebSocketController类处理实时通信
 
 ## 阶段六：前端界面开发
 
-### 2025-12-23 10:00 - HTML模板设计
+### 2025-12-22 18:22 - HTML模板设计
 - 创建响应式布局结构
 - 实现深色主题CSS变量
 - 设计Bootstrap组件集成
 
-### 2025-12-23 10:30 - CSS样式实现
+### 2025-12-22 18:22  - CSS样式实现
 ```css
 :root {
     --primary-bg: #0a0e27;
@@ -145,14 +149,14 @@
 }
 ```
 
-### 2025-12-23 11:00 - JavaScript核心逻辑
+### 2025-12-22 18:23 - JavaScript核心逻辑
 - 实现WebSocket连接管理
 - 实现数据更新机制
 - 实现图表初始化和更新
 
 ## 阶段七：配置与部署
 
-### 2025-12-23 11:30 - 应用配置
+### 2025-12-22 18:23 - 应用配置
 ```properties
 spring.application.name=SystemMonitoring
 server.port=8080
@@ -162,7 +166,7 @@ spring.jpa.hibernate.ddl-auto=create-drop
 spring.thymeleaf.cache=false
 ```
 
-### 2025-12-23 12:00 - WebSocket配置
+### 2025-12-22 18:24 - WebSocket配置
 ```java
 @Configuration
 @EnableWebSocketMessageBroker
@@ -182,12 +186,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 ## 阶段八：问题诊断与修复
 
-### 2025-12-23 12:30 - 图表显示问题发现
+### 2025-12-22 18:30 - 图表显示问题发现
 - **问题**: 时序图表和分布图表无法正常显示
 - **现象**: 图表容器存在但Chart.js未正确初始化
 - **影响**: 核心数据可视化功能失效
 
-### 2025-12-23 13:00 - 问题诊断过程
+### 2025-12-22 18:30 - 问题诊断过程
 1. **初步检查**:
    - 确认HTML模板正确加载
    - 确认CSS样式正确应用
@@ -203,7 +207,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
    - 导致Chart对象未定义
    - 图表初始化函数提前返回
 
-### 2025-12-23 13:30 - 解决方案实施
+### 2025-12-22 18:30 - 解决方案实施
 1. **多重备用加载源**:
    - 保留原有webjars路径
    - 添加CDN备用路径
@@ -226,20 +230,20 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 ## 阶段九：测试与验证
 
-### 2025-12-23 14:00 - 功能测试
+### 2025-12-22 18:33 - 功能测试
 - 测试WebSocket连接
 - 测试API接口响应
 - 测试数据可视化功能
 - 测试响应式布局
 
-### 2025-12-23 14:30 - 性能优化
+### 2025-12-22 18:34 - 性能优化
 - 实现图表更新性能优化
 - 添加数据缓存机制
 - 优化DOM操作频率
 
 ## 阶段十：文档完善
 
-### 2025-12-23 15:00 - README文档创建
+### 2025-12-22 18:40 - README文档创建
 - 编写完整的项目说明文档
 - 包含技术选型和架构设计
 - 提供运行和部署指南
