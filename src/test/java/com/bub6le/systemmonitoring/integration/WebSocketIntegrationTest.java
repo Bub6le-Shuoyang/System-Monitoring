@@ -65,6 +65,15 @@ class WebSocketIntegrationTest {
         testAlert = new Alert("server-01", Alert.AlertSeverity.HIGH, "CPU使用率过高");
         testAlert.setId(1L);
         testAlert.setResolved(false);
+        
+        // 使用反射设置messagingTemplate字段
+        try {
+            java.lang.reflect.Field messagingTemplateField = WebSocketController.class.getDeclaredField("messagingTemplate");
+            messagingTemplateField.setAccessible(true);
+            messagingTemplateField.set(webSocketController, messagingTemplate);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to inject messagingTemplate mock", e);
+        }
     }
 
     @Test
@@ -156,8 +165,6 @@ class WebSocketIntegrationTest {
     void testRealTimeDataUpdateFrequency() {
         // Given
         when(systemMetricsService.generateMockMetrics()).thenReturn(testMetric);
-        when(taskService.generateMockTask()).thenReturn(testTask);
-        when(alertService.generateMockAlert()).thenReturn(testAlert);
 
         // When - 模拟多次数据生成
         for (int i = 0; i < 3; i++) {
@@ -166,8 +173,7 @@ class WebSocketIntegrationTest {
 
         // Then
         verify(systemMetricsService, times(3)).generateMockMetrics();
-        verify(taskService, atMost(3)).generateMockTask();
-        verify(alertService, atMost(3)).generateMockAlert();
+        // 由于随机性，task和alert的mock可能不会被调用
     }
 
     @Test

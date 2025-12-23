@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class AlertRepositoryTest {
 
     @Autowired
@@ -31,31 +33,29 @@ class AlertRepositoryTest {
 
     @BeforeEach
     void setUp() {
+        // 清理数据库
+        alertRepository.deleteAll();
+        
         baseTime = LocalDateTime.of(2023, 12, 23, 10, 0, 0);
         
-        // 创建测试数据
+        // 创建测试数据 - 不设置ID，让数据库自动生成
         testAlert1 = new Alert("server-01", Alert.AlertSeverity.LOW, "CPU使用率略高");
-        testAlert1.setId(1L);
         testAlert1.setTimestamp(baseTime);
         testAlert1.setResolved(false);
 
         testAlert2 = new Alert("server-02", Alert.AlertSeverity.MEDIUM, "内存使用率过高");
-        testAlert2.setId(2L);
         testAlert2.setTimestamp(baseTime.plusMinutes(1));
         testAlert2.setResolved(false);
 
         testAlert3 = new Alert("server-03", Alert.AlertSeverity.HIGH, "磁盘空间即将耗尽");
-        testAlert3.setId(3L);
         testAlert3.setTimestamp(baseTime.plusMinutes(2));
         testAlert3.setResolved(false);
 
         testAlert4 = new Alert("server-04", Alert.AlertSeverity.CRITICAL, "系统崩溃");
-        testAlert4.setId(4L);
         testAlert4.setTimestamp(baseTime.plusMinutes(3));
         testAlert4.setResolved(false);
 
         testAlert5 = new Alert("server-05", Alert.AlertSeverity.LOW, "网络延迟增加");
-        testAlert5.setId(5L);
         testAlert5.setTimestamp(baseTime.plusMinutes(4));
         testAlert5.setResolved(true);
     }

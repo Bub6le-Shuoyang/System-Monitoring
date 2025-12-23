@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class TaskRepositoryTest {
 
     @Autowired
@@ -31,32 +33,31 @@ class TaskRepositoryTest {
 
     @BeforeEach
     void setUp() {
+        // 清理数据库
+        taskRepository.deleteAll();
+        
         baseTime = LocalDateTime.of(2023, 12, 23, 10, 0, 0);
         
-        // 创建测试数据
+        // 创建测试数据 - 不设置ID，让数据库自动生成
         testTask1 = new Task("系统备份", "生产集群");
-        testTask1.setId(1L);
         testTask1.setStatus(Task.TaskStatus.QUEUED);
         testTask1.setProgress(0);
         testTask1.setCreatedTime(baseTime);
         testTask1.setUpdatedTime(baseTime);
 
         testTask2 = new Task("日志清理", "测试集群");
-        testTask2.setId(2L);
         testTask2.setStatus(Task.TaskStatus.RUNNING);
         testTask2.setProgress(50);
         testTask2.setCreatedTime(baseTime.plusMinutes(1));
         testTask2.setUpdatedTime(baseTime.plusMinutes(2));
 
         testTask3 = new Task("性能监控", "开发集群");
-        testTask3.setId(3L);
         testTask3.setStatus(Task.TaskStatus.COMPLETED);
         testTask3.setProgress(100);
         testTask3.setCreatedTime(baseTime.plusMinutes(2));
         testTask3.setUpdatedTime(baseTime.plusMinutes(3));
 
         testTask4 = new Task("安全扫描", "生产集群");
-        testTask4.setId(4L);
         testTask4.setStatus(Task.TaskStatus.FAILED);
         testTask4.setProgress(25);
         testTask4.setCreatedTime(baseTime.plusMinutes(3));

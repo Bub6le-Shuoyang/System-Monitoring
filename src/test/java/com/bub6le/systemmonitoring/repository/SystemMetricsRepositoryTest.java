@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class SystemMetricsRepositoryTest {
 
     @Autowired
@@ -29,6 +31,9 @@ class SystemMetricsRepositoryTest {
 
     @BeforeEach
     void setUp() {
+        // 清理数据库
+        systemMetricsRepository.deleteAll();
+        
         baseTime = LocalDateTime.of(2023, 12, 23, 10, 0, 0);
         
         // 创建测试数据

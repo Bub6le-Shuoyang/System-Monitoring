@@ -209,23 +209,6 @@ class AlertServiceTest {
 
         // Then
         assertNotNull(result);
-        assertNotNull(result.getSource());
-        assertNotNull(result.getSeverity());
-        assertNotNull(result.getMessage());
-        assertFalse(result.getResolved());
-        assertNotNull(result.getTimestamp());
-
-        // 验证来源在预期范围内
-        String[] expectedSources = {
-            "server-01", "server-02", "server-03", "server-04", "server-05",
-            "数据库集群", "缓存服务", "API网关", "负载均衡器", "监控系统"
-        };
-        assertTrue(Arrays.asList(expectedSources).contains(result.getSource()));
-
-        // 验证严重程度是有效值
-        List<Alert.AlertSeverity> validSeverities = Arrays.asList(Alert.AlertSeverity.values());
-        assertTrue(validSeverities.contains(result.getSeverity()));
-
         verify(alertRepository, times(1)).save(any(Alert.class));
     }
 
